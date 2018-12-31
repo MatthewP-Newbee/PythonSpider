@@ -1,0 +1,1 @@
+[wallhaven](https://alpha.wallhaven.cc/)是我常逛的壁纸网站，试着爬一下里面包含标签为 `animal` 的图片，爬10页并且存在本地。
