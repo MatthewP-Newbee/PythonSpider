@@ -42,23 +42,20 @@ class Animal(object):
 
     def get_image(self, text):
         tree = etree.HTML(text)
-        print(etree.tostring(tree))
-        figs = tree.xpath('//figure')
+        figs = tree.xpath('//ul/li/figure')
         for fig in figs:
             name = fig.get('data-wallpaper-id') or self.rd_str()
-            print(name)
-            img = fig.xpath('//img')
-            for each in img:
-                print(each.xpath('/text()'))
-            try:
-                path = img.xpath('@data-src')
-                response = requests.get(path)
-                if response.status_code == 200:
-                    content = response.content
-                with open(f'../../Downloads/Animals/{name}', 'rb') as fh:
-                    fh.write(content)
-            except requests.ConnectionError as e:
-                print(e)
+            imgs = fig.xpath('./img')
+            for img in imgs:
+                try:
+                    path = img.xpath('./@data-src')
+                    response = requests.get(path[0])
+                    if response.status_code == 200:
+                        content = response.content
+                        with open(f'../../Downloads/Animals/{name}.jpg', 'wb') as fh:
+                            fh.write(content)
+                except requests.ConnectionError as e:
+                    print(e)
 
     def rd_str(self):
         chars = string.ascii_letters + string.digits
