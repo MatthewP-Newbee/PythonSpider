@@ -4,11 +4,12 @@
 # @Date: 2019/1/2
 # @Author: MatthewP
 
-from lxml import etree
 import requests
 from urllib.parse import urlencode
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class AnmWallpapers(object):
@@ -23,21 +24,26 @@ class AnmWallpapers(object):
 
             elems = driver.find_elements(By.XPATH, '//ul/li/figure/a')
             for elem in elems:
-                image_url = elem.get_attribute('href')
-                self.download_image(image_url)
+                elem.click()
+                image_handle = driver.window_handles[1]
+                driver.switch_to.window(image_handle)
+                wait = WebDriverWait(driver, 100)
+                wait.until(EC.presence_of_element_located((By.XPATH, '//main/section/div/img')))
+                image_elem = driver.find_element(By.XPATH, '//main/section/div/img')
+                image_id = image_elem.get_attribute('data-wallpaper-id')
+                image_url = image_elem.get_attribute('src')
+                self.download_image(image_url, image_id)
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
 
-    def download_image(self, url):
-        response = requests.get(url)
-        if response.status_code == 200:
-            html = etree.HTML(response.text)
-            image = html.xpath('//main/section/div/img/@src')[0]
-            id = html.xpath('//main/section/div/img/@data-wallpaper-id')[0]
-            image_path = ''.join(['https:', image])
-            image_response = requests.get(image_path)
-            if image_response.status_code == 200:
-                contents = image_response.content
-                with open(f'../../Downloads/AnimalImages/{id}.jpg', 'wb') as fh:
-                    fh.write(contents)
+    def download_image(self, url, id):
+        print(url)
+        image_response = requests.get(url)
+        if image_response.status_code == 200:
+            contents = image_response.content
+            with open(f'../../Downloads/AnimalImages/{id}.jpg', 'wb') as fh:
+                fh.write(contents)
+
 
     def one_page(self, url):
         driver = webdriver.Chrome()
