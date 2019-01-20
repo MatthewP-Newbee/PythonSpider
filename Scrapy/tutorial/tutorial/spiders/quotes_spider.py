@@ -23,6 +23,8 @@ class QuotesSpider(scrapy.Spider):
     def parse(self, response):
         for quote in response.xpath('//div/quote'):
             yield {
-                'text': quote.xpath('/span[class="text"][1]/text()'),
-                'author': quote.xpath('/small[class="author"][1]/text()'),
+                'text': quote.css('span.text::text').extract_first(),
+                'author': quote.css('span small::text').extract_first(),
             }
+        for a in response.css('li.next a'):
+            yield response.follow(a, callback=self.parse)
