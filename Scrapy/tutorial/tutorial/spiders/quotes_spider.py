@@ -21,8 +21,8 @@ class QuotesSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
-        page = response.url.split('/')[-2]
-        filename = 'quotes-%s.html' % page
-        with open(filename, 'wb') as f:
-            f.write(response.body)
-        self.log('Saved file %s' % filename)
+        for quote in response.xpath('//div/quote'):
+            yield {
+                'text': quote.xpath('/span[class="text"][1]/text()'),
+                'author': quote.xpath('/small[class="author"][1]/text()'),
+            }
